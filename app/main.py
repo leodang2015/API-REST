@@ -8,10 +8,10 @@ from app.routes import auth, health, usuario
 
 app = FastAPI(title=settings.app_name)
 
-if settings.cors_origin_list:
+if settings.cors_origins:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origin_list,
+        allow_origins=settings.cors_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

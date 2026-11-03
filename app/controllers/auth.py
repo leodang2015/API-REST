@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
+import jwt
 from fastapi import HTTPException, status
-from jose import JWTError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -73,12 +73,12 @@ def crear_tokens(db: Session, user: Usuario) -> dict[str, str]:
     access = create_token(
         str(user.id),
         "access",
-        timedelta(minutes=settings.access_token_minutes),
+        timedelta(minutes=settings.access_token_expire_minutes),
     )
     refresh = create_token(
         str(user.id),
         "refresh",
-        timedelta(days=settings.refresh_token_days),
+        timedelta(days=settings.refresh_token_expire_days),
     )
     db.add(
         RefreshToken(
@@ -97,7 +97,7 @@ def renovar_tokens(db: Session, raw_token: str) -> dict[str, str]:
         if claims.get("type") != "refresh":
             raise NoAutenticado("Se requiere un token de renovación")
         user_id = int(claims["sub"])
-    except (JWTError, KeyError, TypeError, ValueError) as exc:
+    except (jwt.InvalidTokenError, KeyError, TypeError, ValueError) as exc:
         raise NoAutenticado("Token de renovación inválido o expirado") from exc
 
     stored_token = db.scalar(

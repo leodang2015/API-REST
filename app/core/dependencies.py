@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError
+import jwt
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal
@@ -36,7 +36,7 @@ def get_current_user(
         if claims.get("type") != "access":
             raise NoAutenticado("Se requiere un token de acceso")
         user_id = int(claims["sub"])
-    except (JWTError, KeyError, TypeError, ValueError) as exc:
+    except (jwt.InvalidTokenError, KeyError, TypeError, ValueError) as exc:
         raise NoAutenticado("Token inválido o expirado") from exc
 
     user = db.get(Usuario, user_id)

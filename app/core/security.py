@@ -3,7 +3,7 @@ from hashlib import sha256
 from typing import Any
 from uuid import uuid4
 
-from jose import JWTError, jwt
+import jwt
 from pwdlib import PasswordHash
 
 from app.core.config import settings
@@ -35,11 +35,11 @@ def create_token(
         "exp": now + expires_delta,
         "jti": token_id or str(uuid4()),
     }
-    return jwt.encode(payload, settings.secret_key, algorithm=settings.jwt_algorithm)
+    return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 
 
 def decode_token(token: str) -> dict[str, Any]:
-    return jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
+    return jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
 
 
 def token_digest(token: str) -> str:
@@ -50,5 +50,5 @@ def token_expiration(token: str) -> datetime:
     claims = decode_token(token)
     expiration = claims.get("exp")
     if not isinstance(expiration, (int, float)):
-        raise JWTError("Token sin expiración válida")
+        raise jwt.InvalidTokenError("Token sin expiración válida")
     return datetime.fromtimestamp(expiration, tz=timezone.utc)
