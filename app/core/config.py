@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     account_lock_minutes: int = Field(default=15, gt=0)
     cors_origins: list[str] = Field(default_factory=list)
     environment: Literal["dev", "test", "prod"] = "dev"
+    cloudinary_url: SecretStr | None = None
+    cloudinary_cloud_name: str | None = None
+    cloudinary_api_key: str | None = None
+    cloudinary_api_secret: SecretStr | None = None
 
     model_config = SettingsConfigDict(
         env_file=".env",
