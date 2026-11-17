@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1').replace(/\/$/, '')
+const API_URL = (import.meta.env.VITE_API_URL || '/api/v1').replace(/\/$/, '')
 const accessToken = ref(sessionStorage.getItem('access_token') || '')
 const refreshToken = ref(sessionStorage.getItem('refresh_token') || '')
 const isAuthenticated = computed(() => Boolean(accessToken.value))
