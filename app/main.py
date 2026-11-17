@@ -4,7 +4,18 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.exceptions import CuentaBloqueada, NoAutenticado, Prohibido
-from app.routes import auth, health, usuario
+from app.routes import (
+    auth,
+    autores,
+    categorias,
+    health,
+    libros,
+    portadas,
+    prestamos,
+    productos,
+    socios,
+    usuario,
+)
 
 app = FastAPI(title=settings.app_name)
 
@@ -48,4 +59,11 @@ async def cuenta_bloqueada_handler(request: Request, exc: CuentaBloqueada) -> JS
 
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(usuario.router, prefix="/api/v1")
+app.include_router(autores.router, prefix="/api/v1")
+app.include_router(categorias.router, prefix="/api/v1")
+app.include_router(libros.router, prefix="/api/v1")
+app.include_router(portadas.router, prefix="/api/v1")
+app.include_router(prestamos.router, prefix="/api/v1")
+app.include_router(productos.router, prefix="/api/v1")
+app.include_router(socios.router, prefix="/api/v1")
 app.include_router(health.router, prefix="/api/v1")
