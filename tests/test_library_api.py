@@ -10,6 +10,7 @@ from app.core.database import Base
 from app.core.dependencies import get_current_user, get_db
 from app.main import app
 from app.models.libro import Libro
+from app.models.socio import Socio
 import app.controllers.libros as libros
 import app.routes.portadas as portadas
 from app.schemas.imagen import PortadaRespuesta
@@ -24,7 +25,7 @@ def api_client(monkeypatch):
     )
     Base.metadata.create_all(engine)
     test_session = sessionmaker(bind=engine, expire_on_commit=False)
-    role = {"value": "admin"}
+    role = {"value": "bibliotecario", "id": None}
 
     def subir_portada(libro_id, archivo, nombre_original):
         return PortadaRespuesta(
@@ -45,7 +46,10 @@ def api_client(monkeypatch):
 
     monkeypatch.setattr(libros, "subir_portada", subir_portada)
     app.dependency_overrides[get_db] = override_db
-    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(role=role["value"])
+    app.dependency_overrides[get_current_user] = lambda: SimpleNamespace(
+        role=role["value"],
+        id=role["id"],
+    )
     with TestClient(app) as client:
         yield client, role, test_session
     app.dependency_overrides.clear()
@@ -129,11 +133,11 @@ def test_catalog_product_and_loan_workflow(api_client):
 def test_only_admin_can_write_and_cover_upload_persists(api_client, monkeypatch):
     client, role, test_session = api_client
     records = crear_libro(client)
-    role["value"] = "user"
+    role["value"] = "cliente"
     assert client.get("/api/v1/libros").status_code == 200
     assert client.post("/api/v1/autores", json={"nombre": "Otro autor"}).status_code == 403
 
-    role["value"] = "admin"
+    role["value"] = "bibliotecario"
 
     def subir_portada(libro_id, archivo, nombre_original):
         return PortadaRespuesta(
@@ -191,3 +195,66 @@ def test_book_creation_accepts_binary_cover(api_client):
         files={"archivo_portada": ("portada.txt", b"not-an-image", "text/plain")},
     )
     assert invalido.status_code == 415
+
+
+def test_client_requests_are_private_and_librarian_can_set_delivery_date(api_client):
+    client, role, test_session = api_client
+    records = crear_libro(client)
+    first_client = client.post(
+        "/api/v1/auth/registro",
+        json={
+            "nombre": "Ana Pérez",
+            "email": "ana@example.com",
+            "password": "password-seguro",
+        },
+    )
+    second_client = client.post(
+        "/api/v1/auth/registro",
+        json={
+            "nombre": "Luis Gómez",
+            "email": "luis@example.com",
+            "password": "password-seguro",
+        },
+    )
+    assert first_client.status_code == 201, first_client.text
+    assert second_client.status_code == 201, second_client.text
+    first_client_id = first_client.json()["usuario"]["id"]
+    second_client_id = second_client.json()["usuario"]["id"]
+    with test_session() as db:
+        assert db.query(Socio).filter_by(usuario_id=first_client_id).one_or_none()
+        assert db.query(Socio).filter_by(usuario_id=second_client_id).one_or_none()
+
+    role.update(value="cliente", id=first_client_id)
+    first_request = client.post(
+        "/api/v1/solicitudes",
+        json={"libro_id": records["libro"]["id"]},
+    )
+    assert first_request.status_code == 201, first_request.text
+    first_request_id = first_request.json()["id"]
+
+    role["id"] = second_client_id
+    second_request = client.post(
+        "/api/v1/solicitudes",
+        json={"libro_id": records["libro"]["id"]},
+    )
+    assert second_request.status_code == 201, second_request.text
+    second_request_id = second_request.json()["id"]
+
+    role["id"] = first_client_id
+    assert [item["id"] for item in client.get("/api/v1/solicitudes").json()] == [
+        first_request_id
+    ]
+    assert client.get(f"/api/v1/solicitudes/{second_request_id}").status_code == 403
+    assert client.patch(
+        f"/api/v1/solicitudes/{first_request_id}",
+        json={"estado": "aceptada", "fecha_entrega_estimada": "2030-01-03T12:00:00Z"},
+    ).status_code == 403
+
+    role["value"] = "bibliotecario"
+    resolved = client.patch(
+        f"/api/v1/solicitudes/{first_request_id}",
+        json={"estado": "aceptada", "fecha_entrega_estimada": "2030-01-03T12:00:00Z"},
+    )
+    assert resolved.status_code == 200, resolved.text
+    assert resolved.json()["estado"] == "aceptada"
+    assert resolved.json()["fecha_entrega_estimada"].startswith("2030-01-03T12:00:00")

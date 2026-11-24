@@ -38,7 +38,7 @@ def crear(db: Session, datos: PrestamoCrear) -> Prestamo:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Socio no encontrado")
     if not socio.activo:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="El socio no está activo",
         )
     libro = db.get(Libro, datos.libro_id)
@@ -53,7 +53,7 @@ def crear(db: Session, datos: PrestamoCrear) -> Prestamo:
     if resultado.rowcount != 1:
         db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="No hay ejemplares disponibles para ese libro",
         )
 

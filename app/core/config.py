@@ -8,7 +8,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     app_name: str = "Biblioteca API"
     database_url: str = "postgresql+psycopg://biblioteca:biblioteca@localhost:5432/biblioteca"
-    test_database_url: str = "postgresql+psycopg://biblioteca:biblioteca@localhost:5432/biblioteca_test"
     secret_key: str = Field(min_length=32)
     algorithm: str = "HS256"
     access_token_expire_minutes: int = Field(default=15, gt=0)

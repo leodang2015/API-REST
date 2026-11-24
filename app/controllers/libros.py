@@ -73,7 +73,7 @@ def crear(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Autor no encontrado")
     if datos.disponible > datos.ejemplares:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Los ejemplares disponibles no pueden superar el total",
         )
     categorias = _obtener_categorias(db, datos.categoria_ids)
@@ -117,7 +117,7 @@ def actualizar(db: Session, libro_id: int, datos: LibroActualizar) -> Libro:
     ) or 0
     if nueva_disponibilidad > nuevo_total or nueva_disponibilidad + prestamos_activos > nuevo_total:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="El total de ejemplares no puede ser menor que los disponibles y prestados",
         )
     for campo, valor in cambios.items():

@@ -5,6 +5,7 @@ from app.models.prestamo import Prestamo
 from app.models.producto import Producto
 from app.models.refresh_token import RefreshToken
 from app.models.socio import Socio
+from app.models.solicitud_prestamo import SolicitudPrestamo
 from app.models.usuario import Usuario
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "Producto",
     "RefreshToken",
     "Socio",
+    "SolicitudPrestamo",
     "Usuario",
 ]

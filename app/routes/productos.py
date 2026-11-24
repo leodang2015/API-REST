@@ -8,7 +8,7 @@ from app.models.usuario import Usuario
 from app.schemas.producto import ProductoActualizar, ProductoCrear, ProductoLeer
 
 router = APIRouter(prefix="/productos", tags=["productos"])
-AdminDep = Annotated[Usuario, Depends(requiere_rol("admin"))]
+AdminDep = Annotated[Usuario, Depends(requiere_rol("bibliotecario"))]
 
 
 @router.get("", response_model=list[ProductoLeer])

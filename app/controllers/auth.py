@@ -16,6 +16,7 @@ from app.core.security import (
     verify_password,
 )
 from app.models.refresh_token import RefreshToken
+from app.models.socio import Socio
 from app.models.usuario import Usuario
 from app.schemas.auth import LoginRequest
 from app.schemas.usuario import UsuarioCrear
@@ -30,8 +31,15 @@ def registrar_usuario(db: Session, data: UsuarioCrear) -> Usuario:
             detail="Ya existe una cuenta con ese correo",
         )
 
-    user = Usuario(nombre=data.nombre, email=email, password_hash=hash_password(data.password))
+    user = Usuario(
+        nombre=data.nombre,
+        email=email,
+        password_hash=hash_password(data.password),
+        role="cliente",
+    )
     db.add(user)
+    db.flush()
+    db.add(Socio(nombre=data.nombre, email=email, usuario_id=user.id))
     db.commit()
     db.refresh(user)
     return user

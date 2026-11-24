@@ -15,7 +15,7 @@ from app.schemas.pagina import Pagina
 from app.schemas.usuario import UsuarioActualizar, UsuarioPublico
 
 router = APIRouter(prefix="/usuarios", tags=["usuarios"])
-AdminDep = Annotated[Usuario, Depends(requiere_rol("admin"))]
+AdminDep = Annotated[Usuario, Depends(requiere_rol("bibliotecario"))]
 
 
 @router.get("/me", response_model=UsuarioPublico)
@@ -57,7 +57,7 @@ def obtener(
     db: SessionDep,
     current_user: CurrentUser,
 ) -> Usuario:
-    if current_user.id != user_id and current_user.role != "admin":
+    if current_user.id != user_id and current_user.role != "bibliotecario":
         raise Prohibido()
     user = usuario_controller.obtener_usuario(db, user_id)
     if user is None:

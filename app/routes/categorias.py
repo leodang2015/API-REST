@@ -10,7 +10,7 @@ from app.schemas.categoria import CategoriaActualizar, CategoriaCrear, Categoria
 from app.schemas.producto import ProductoLeer
 
 router = APIRouter(prefix="/categorias", tags=["categorías"])
-AdminDep = Annotated[Usuario, Depends(requiere_rol("admin"))]
+AdminDep = Annotated[Usuario, Depends(requiere_rol("bibliotecario"))]
 
 
 @router.get("", response_model=list[CategoriaLeer])

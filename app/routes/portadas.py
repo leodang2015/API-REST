@@ -10,7 +10,7 @@ from app.schemas.imagen import PortadaRespuesta
 from app.services.cloudinary import subir_portada as subir_portada_cloudinary
 
 router = APIRouter(prefix="/libros", tags=["portadas"])
-AdminDep = Annotated[Usuario, Depends(requiere_rol("admin"))]
+AdminDep = Annotated[Usuario, Depends(requiere_rol("bibliotecario"))]
 
 
 @router.post(

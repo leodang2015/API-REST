@@ -9,7 +9,7 @@ from app.models.usuario import Usuario
 from app.schemas.libro import LibroActualizar, LibroCrear, LibroLeer
 
 router = APIRouter(prefix="/libros", tags=["libros"])
-AdminDep = Annotated[Usuario, Depends(requiere_rol("admin"))]
+AdminDep = Annotated[Usuario, Depends(requiere_rol("bibliotecario"))]
 
 
 @router.get("", response_model=list[LibroLeer])
@@ -30,11 +30,28 @@ def obtener(libro_id: int, _user: CurrentUser, db: SessionDep) -> LibroLeer:
 
 @router.post("", response_model=LibroLeer, status_code=status.HTTP_201_CREATED)
 def crear(
-    datos: Annotated[LibroCrear, Form()],
+    titulo: Annotated[str, Form(min_length=2, max_length=150)],
+    isbn: Annotated[str, Form(min_length=8, max_length=20)],
+    autor_id: Annotated[int, Form(gt=0)],
     archivo_portada: Annotated[UploadFile, File()],
     db: SessionDep,
     _admin: AdminDep,
+    descripcion: Annotated[str | None, Form(max_length=500)] = None,
+    anio_publicacion: Annotated[int | None, Form(ge=1000)] = None,
+    ejemplares: Annotated[int, Form(ge=1)] = 1,
+    disponible: Annotated[int, Form(ge=0)] = 1,
+    categoria_ids: Annotated[list[int] | None, Form()] = None,
 ) -> LibroLeer:
+    datos = LibroCrear(
+        titulo=titulo,
+        isbn=isbn,
+        descripcion=descripcion,
+        anio_publicacion=anio_publicacion,
+        ejemplares=ejemplares,
+        disponible=disponible,
+        autor_id=autor_id,
+        categoria_ids=categoria_ids or [],
+    )
     nombre_original = validar_archivo_portada(archivo_portada)
     return controlador.crear(
         db,

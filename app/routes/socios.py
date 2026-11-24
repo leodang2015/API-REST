@@ -8,7 +8,7 @@ from app.models.usuario import Usuario
 from app.schemas.socio import SocioActualizar, SocioCrear, SocioLeer
 
 router = APIRouter(prefix="/socios", tags=["socios"])
-AdminDep = Annotated[Usuario, Depends(requiere_rol("admin"))]
+AdminDep = Annotated[Usuario, Depends(requiere_rol("bibliotecario"))]
 
 
 @router.get("", response_model=list[SocioLeer])

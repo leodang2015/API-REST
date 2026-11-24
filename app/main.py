@@ -14,6 +14,7 @@ from app.routes import (
     prestamos,
     productos,
     socios,
+    solicitudes,
     usuario,
 )
 
@@ -64,6 +65,7 @@ app.include_router(categorias.router, prefix="/api/v1")
 app.include_router(libros.router, prefix="/api/v1")
 app.include_router(portadas.router, prefix="/api/v1")
 app.include_router(prestamos.router, prefix="/api/v1")
+app.include_router(solicitudes.router, prefix="/api/v1")
 app.include_router(productos.router, prefix="/api/v1")
 app.include_router(socios.router, prefix="/api/v1")
 app.include_router(health.router, prefix="/api/v1")

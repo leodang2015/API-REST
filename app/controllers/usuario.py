@@ -37,7 +37,7 @@ def actualizar_usuario(db: Session, user: Usuario, data: UsuarioActualizar) -> U
 
 
 def desactivar_usuario(db: Session, user: Usuario) -> None:
-    if user.role == "admin":
+    if user.role == "bibliotecario":
         raise Prohibido("No se puede desactivar una cuenta de administrador desde esta ruta")
     user.is_active = False
     db.commit()

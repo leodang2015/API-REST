@@ -9,9 +9,9 @@ from app.models.usuario import Usuario
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Crear o promover una cuenta de administrador")
-    parser.add_argument("--nombre", required=True, help="Nombre del administrador")
-    parser.add_argument("--email", required=True, help="Correo del administrador")
+    parser = argparse.ArgumentParser(description="Crear o promover una cuenta de bibliotecario")
+    parser.add_argument("--nombre", required=True, help="Nombre del bibliotecario")
+    parser.add_argument("--email", required=True, help="Correo del bibliotecario")
     args = parser.parse_args()
     password = getpass.getpass("Contraseña (mínimo 8 caracteres): ")
     if len(password) < 8:
@@ -25,18 +25,18 @@ def main() -> None:
                 nombre=args.nombre.strip(),
                 email=email,
                 password_hash=hash_password(password),
-                role="admin",
+                role="bibliotecario",
             )
             db.add(user)
         else:
             user.nombre = args.nombre.strip()
             user.password_hash = hash_password(password)
-            user.role = "admin"
+            user.role = "bibliotecario"
             user.is_active = True
             user.failed_login_attempts = 0
             user.locked_until = None
         db.commit()
-        print(f"Administrador listo: {email}")
+        print(f"Bibliotecario listo: {email}")
 
 
 if __name__ == "__main__":

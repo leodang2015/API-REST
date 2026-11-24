@@ -8,7 +8,7 @@ from app.models.usuario import Usuario
 from app.schemas.prestamo import PrestamoActualizar, PrestamoCrear, PrestamoLeer
 
 router = APIRouter(prefix="/prestamos", tags=["préstamos"])
-AdminDep = Annotated[Usuario, Depends(requiere_rol("admin"))]
+AdminDep = Annotated[Usuario, Depends(requiere_rol("bibliotecario"))]
 
 
 @router.get("", response_model=list[PrestamoLeer])
