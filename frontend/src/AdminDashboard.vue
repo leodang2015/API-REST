@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, nextTick, onMounted, reactive, ref } from 'vue'
 
 const props = defineProps({
   apiRequest: { type: Function, required: true },
@@ -13,6 +13,8 @@ const activeSection = ref('dashboard')
 const busy = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const confirmation = ref(null)
+const confirmationDialog = ref(null)
 const health = ref(null)
 const stats = ref({ authors: 0, books: 0, borrowers: 0, loans: 0 })
 const recentLoans = ref([])
@@ -55,6 +57,7 @@ const userPageData = ref({ items: [], total: 0, page: 1, page_size: 10 })
 const userDetail = ref(null)
 const profile = reactive({ nombre: '', email: '' })
 const productFilters = reactive({ buscar: '', categoria_id: '', solo_activos: false })
+let resolveConfirmation = null
 
 const sections = computed(() => {
   const base = [
@@ -172,6 +175,26 @@ const currentResource = computed(() => resources[activeSection.value] || null)
 function setNotice(message, isError = false) {
   errorMessage.value = isError ? message : ''
   successMessage.value = isError ? '' : message
+}
+
+function askConfirmation(options) {
+  return new Promise((resolve) => {
+    resolveConfirmation = resolve
+    confirmation.value = options
+    nextTick(() => {
+      if (confirmationDialog.value && !confirmationDialog.value.open) {
+        confirmationDialog.value.showModal()
+      }
+    })
+  })
+}
+
+function finishConfirmation(confirmed) {
+  const resolve = resolveConfirmation
+  resolveConfirmation = null
+  confirmation.value = null
+  if (confirmationDialog.value?.open) confirmationDialog.value.close()
+  resolve?.(confirmed)
 }
 
 function errorText(error) {
@@ -421,7 +444,12 @@ async function showCategoryProducts() {
 
 async function deleteResource(row) {
   const config = resources[activeSection.value]
-  if (!window.confirm(`¿Eliminar este ${config.singular}?`)) return
+  if (!await askConfirmation({
+    title: `Eliminar ${config.singular}`,
+    message: `¿Eliminar el registro de ${config.singular}?`,
+    confirmLabel: 'Sí, eliminar',
+    tone: 'danger',
+  })) return
   try {
     await props.apiRequest(`${config.path}/${row.id}`, { method: 'DELETE' })
     resourceDetail.value = null
@@ -527,7 +555,12 @@ async function showBookDetail(row) {
 }
 
 async function deleteBook(row) {
-  if (!window.confirm(`¿Eliminar "${row.titulo}"?`)) return
+  if (!await askConfirmation({
+    title: 'Eliminar libro',
+    message: `¿Eliminar "${row.titulo}"?`,
+    confirmLabel: 'Sí, eliminar',
+    tone: 'danger',
+  })) return
   try {
     await props.apiRequest(`/libros/${row.id}`, { method: 'DELETE' })
     bookDetail.value = null
@@ -591,7 +624,12 @@ async function showLoanDetail(row) {
 }
 
 async function returnLoan(loan) {
-  if (!window.confirm(`¿Registrar la devolución de "${loan.libro.titulo}"?`)) return
+  if (!await askConfirmation({
+    title: 'Registrar devolución',
+    message: `¿Confirmas la devolución de "${loan.libro.titulo}"?`,
+    confirmLabel: 'Sí, registrar',
+    tone: 'primary',
+  })) return
   try {
     await props.apiRequest(`/prestamos/${loan.id}`, {
       method: 'PATCH',
@@ -621,7 +659,12 @@ async function saveFine(loan) {
 }
 
 async function deleteLoan(loan) {
-  if (!window.confirm('¿Eliminar este préstamo devuelto?')) return
+  if (!await askConfirmation({
+    title: 'Eliminar préstamo',
+    message: '¿Eliminar este préstamo devuelto?',
+    confirmLabel: 'Sí, eliminar',
+    tone: 'danger',
+  })) return
   try {
     await props.apiRequest(`/prestamos/${loan.id}`, { method: 'DELETE' })
     await loadLoans()
@@ -661,7 +704,12 @@ async function acceptRequest() {
 }
 
 async function rejectRequest(request) {
-  if (!window.confirm(`¿Rechazar la solicitud de "${request.libro.titulo}"?`)) return
+  if (!await askConfirmation({
+    title: 'Rechazar solicitud',
+    message: `¿Rechazar la solicitud de "${request.libro.titulo}"?`,
+    confirmLabel: 'Sí, rechazar',
+    tone: 'danger',
+  })) return
   busy.value = true
   try {
     await props.apiRequest(`/solicitudes/${request.id}`, {
@@ -696,7 +744,12 @@ async function requestBook(book) {
 }
 
 async function cancelRequest(request) {
-  if (!window.confirm(`¿Cancelar la solicitud de "${request.libro.titulo}"?`)) return
+  if (!await askConfirmation({
+    title: 'Cancelar solicitud',
+    message: `¿Cancelar la solicitud de "${request.libro.titulo}"?`,
+    confirmLabel: 'Sí, cancelar',
+    tone: 'danger',
+  })) return
   try {
     await props.apiRequest(`/solicitudes/${request.id}`, { method: 'DELETE' })
     await loadRequests()
@@ -741,7 +794,12 @@ async function deactivateUser(row) {
     setNotice('No se puede desactivar una cuenta de bibliotecario desde esta pantalla.', true)
     return
   }
-  if (!window.confirm(`¿Desactivar la cuenta de ${row.nombre}?`)) return
+  if (!await askConfirmation({
+    title: 'Desactivar cuenta',
+    message: `¿Desactivar la cuenta de ${row.nombre}?`,
+    confirmLabel: 'Sí, desactivar',
+    tone: 'danger',
+  })) return
   try {
     await props.apiRequest(`/usuarios/${row.id}`, { method: 'DELETE' })
     await loadUsers()
@@ -1030,5 +1088,35 @@ onMounted(async () => {
 
       <footer class="dashboard-footer">Biblioteca · Gestión integral de catálogo <span>API <span :class="{ 'health-ok': health?.status === 'ok' }">{{ health?.status || '—' }}</span></span></footer>
     </main>
+
+    <dialog
+      v-if="confirmation"
+      ref="confirmationDialog"
+      class="confirm-dialog"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="confirmation-title"
+      aria-describedby="confirmation-message"
+      @cancel.prevent="finishConfirmation(false)"
+    >
+      <div class="confirm-dialog-body">
+        <div class="confirm-dialog-icon" :class="`confirm-dialog-icon-${confirmation.tone}`" aria-hidden="true">
+          {{ confirmation.tone === 'danger' ? '!' : '✓' }}
+        </div>
+        <p class="eyebrow">CONFIRMA LA ACCIÓN</p>
+        <h2 id="confirmation-title">{{ confirmation.title }}</h2>
+        <p id="confirmation-message">{{ confirmation.message }}</p>
+        <div class="confirm-dialog-actions">
+          <button class="confirm-cancel" @click="finishConfirmation(false)">Cancelar</button>
+          <button
+            class="confirm-accept"
+            :class="`confirm-accept-${confirmation.tone}`"
+            @click="finishConfirmation(true)"
+          >
+            {{ confirmation.confirmLabel }}
+          </button>
+        </div>
+      </div>
+    </dialog>
   </div>
 </template>

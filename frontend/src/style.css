@@ -1,5 +1,7 @@
 :root {
-  font-family: Inter, 'Segoe UI', sans-serif;
+  --font-sans: 'Segoe UI', sans-serif;
+  --font-serif: Georgia, serif;
+  font-family: var(--font-sans);
   color: #23332c;
   background: #f5f6f1;
   font-synthesis: none;
@@ -81,7 +83,7 @@ button:disabled {
   border-radius: 13px;
   color: #fff;
   background: var(--green);
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 24px;
 }
 
@@ -232,7 +234,7 @@ button:disabled {
 
 .topbar h1 {
   margin: 0;
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 29px;
   font-weight: 600;
 }
@@ -321,7 +323,7 @@ button:disabled {
 
 .welcome-card h2 {
   margin: 0 0 9px;
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: clamp(25px, 3vw, 34px);
   font-weight: 500;
 }
@@ -339,7 +341,7 @@ button:disabled {
   right: 34px;
   bottom: -70px;
   color: rgb(255 255 255 / 8%);
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 260px;
   line-height: 1;
   user-select: none;
@@ -390,7 +392,7 @@ button:disabled {
 
 .stat-card strong {
   color: var(--ink);
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 25px;
   font-weight: 600;
 }
@@ -417,7 +419,7 @@ button:disabled {
 .table-toolbar h2 {
   margin: 0;
   color: var(--ink);
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 21px;
   font-weight: 600;
 }
@@ -619,7 +621,7 @@ input[type='file'] {
   border-radius: 999px;
   color: #5d7462;
   background: #edf3eb;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   font-size: 11px;
   vertical-align: 2px;
 }
@@ -872,7 +874,7 @@ tbody tr:hover {
 .product-card h3 {
   margin: 0 0 6px;
   color: #37463c;
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 14px;
 }
 
@@ -906,28 +908,207 @@ tbody tr:hover {
 
 .notice {
   display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 0 0 14px;
-  padding: 11px 13px;
-  border-radius: 8px;
-  font-size: 12px;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid transparent;
+  border-left-width: 5px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+  box-shadow: 0 8px 22px rgb(35 51 44 / 8%);
+  animation: notice-enter 220ms ease-out;
 }
 
 .notice > span {
-  font-weight: 800;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 900;
 }
 
 .notice button {
-  min-height: 24px;
+  width: 28px;
+  min-height: 28px;
+  flex: none;
   margin-left: auto;
   border: 0;
+  border-radius: 7px;
   background: transparent;
   font-size: 18px;
 }
 
-.notice-error { color: #8d3228; background: #fbecea; }
-.notice-success { color: #285d43; background: #e8f3eb; }
+.notice button:hover {
+  background: rgb(35 51 44 / 8%);
+}
+
+.notice-error {
+  color: #842d25;
+  border-color: #f2c9c2;
+  border-left-color: #d84c40;
+  background: linear-gradient(110deg, #fff0ed, #fffdfb);
+}
+
+.notice-error > span {
+  color: #fff;
+  background: #d84c40;
+}
+
+.notice-success {
+  color: #285d43;
+  border-color: #c5dfca;
+  border-left-color: #3a9560;
+  background: linear-gradient(110deg, #e8f5eb, #fbfefb);
+}
+
+.notice-success > span {
+  color: #fff;
+  background: #3a9560;
+}
+
+@keyframes notice-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.confirm-dialog {
+  width: min(460px, calc(100vw - 32px));
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #e4e9e2;
+  border-radius: 20px;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 0 28px 90px rgb(18 39 29 / 28%);
+}
+
+.confirm-dialog[open] {
+  animation: confirm-enter 180ms ease-out;
+}
+
+.confirm-dialog::backdrop {
+  background: rgb(17 31 24 / 58%);
+  backdrop-filter: blur(5px);
+}
+
+.confirm-dialog-body {
+  padding: 30px;
+}
+
+.confirm-dialog-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+  border-radius: 16px;
+  font-size: 25px;
+  font-weight: 850;
+}
+
+.confirm-dialog-icon-danger {
+  color: #b5382f;
+  background: #fff0ed;
+  box-shadow: inset 0 0 0 1px #f4d0ca;
+}
+
+.confirm-dialog-icon-primary {
+  color: var(--green-dark);
+  background: #e8f2e9;
+  box-shadow: inset 0 0 0 1px #c9dfcb;
+}
+
+.confirm-dialog .eyebrow {
+  margin-bottom: 7px;
+  color: #819389;
+}
+
+.confirm-dialog h2 {
+  margin: 0 0 10px;
+  font-family: var(--font-serif);
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.confirm-dialog-body > p:last-of-type {
+  margin: 0;
+  color: #65736b;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 28px;
+}
+
+.confirm-cancel,
+.confirm-accept {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 750;
+  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.confirm-cancel {
+  border: 1px solid var(--line);
+  color: #5f6d64;
+  background: #fff;
+}
+
+.confirm-cancel:hover {
+  background: #f3f5f1;
+}
+
+.confirm-accept {
+  border: 0;
+  color: #fff;
+}
+
+.confirm-accept-danger {
+  background: linear-gradient(135deg, #df5b50, #ae352f);
+  box-shadow: 0 7px 16px rgb(174 53 47 / 22%);
+}
+
+.confirm-accept-primary {
+  background: linear-gradient(135deg, #367858, #20573e);
+  box-shadow: 0 7px 16px rgb(36 92 69 / 22%);
+}
+
+.confirm-cancel:hover,
+.confirm-accept:hover {
+  transform: translateY(-1px);
+}
+
+@keyframes confirm-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
 .loading-line {
   height: 4px;
@@ -993,7 +1174,7 @@ tbody tr:hover {
 .auth-intro h1 {
   margin: 0 0 16px;
   color: var(--ink);
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: clamp(43px, 6vw, 70px);
   font-weight: 500;
   line-height: 1.05;
